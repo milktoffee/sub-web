@@ -5,9 +5,9 @@
         <el-card>
           <div slot="header">
             Subscription Converter
-            <svg-icon icon-class="github" style="margin-left: 20px" @click="goToProject" />
+            <!-- <svg-icon icon-class="github" style="margin-left: 20px" @click="goToProject" /> -->
 
-            <div style="display: inline-block; position:absolute; right: 20px">{{ backendVersion }}</div>
+            <!-- <div style="display: inline-block; position:absolute; right: 20px">{{ backendVersion }}</div> -->
           </div>
           <el-container>
             <el-form :model="form" label-width="80px" label-position="left" style="width: 100%">
@@ -32,14 +32,23 @@
 
               <div v-if="advanced === '2'">
                 <el-form-item label="后端地址:">
-                  <el-autocomplete
+                  <!-- <el-autocomplete
                     style="width: 100%"
                     v-model="form.customBackend"
                     :fetch-suggestions="backendSearch"
-                    placeholder="动动小手，（建议）自行搭建后端服务。例：http://127.0.0.1:25500/sub?"
                   >
                     <el-button slot="append" @click="gotoGayhub" icon="el-icon-link">前往项目仓库</el-button>
-                  </el-autocomplete>
+                  </el-autocomplete> -->
+                  <el-select
+                    v-model="form.customBackend"
+                    allow-create
+                    filterable
+                    placeholder="请选择"
+                    style="width: 100%"
+                  >
+                    <el-option v-for="(v, k) in options.customBackend" :key="k" :label="k" :value="v"></el-option>
+
+                  </el-select>
                 </el-form-item>
                 <el-form-item label="远程配置:">
                   <el-select
@@ -77,28 +86,13 @@
                   <el-row type="flex">
                     <el-col>
                       <el-checkbox v-model="form.nodeList" label="输出为 Node List" border></el-checkbox>
+                      <el-checkbox v-model="form.emoji" label="Emoji" border></el-checkbox>
+                      <el-checkbox v-model="form.scv" label="跳过证书验证" border></el-checkbox>
+                      <el-checkbox v-model="form.udp" @change="needUdp = true" label="启用 UDP" border></el-checkbox>
+                      <el-checkbox v-model="form.appendType" label="节点类型" border></el-checkbox>
+                      <el-checkbox v-model="form.sort" label="排序节点" border></el-checkbox>
+                      <el-checkbox v-model="form.fdn" label="过滤非法节点" border></el-checkbox>
                     </el-col>
-                    <el-popover placement="bottom" v-model="form.extraset">
-                      <el-row>
-                        <el-checkbox v-model="form.emoji" label="Emoji"></el-checkbox>
-                      </el-row>
-                      <el-row>
-                        <el-checkbox v-model="form.scv" label="跳过证书验证"></el-checkbox>
-                      </el-row>
-                      <el-row>
-                        <el-checkbox v-model="form.udp" @change="needUdp = true" label="启用 UDP"></el-checkbox>
-                      </el-row>
-                      <el-row>
-                        <el-checkbox v-model="form.appendType" label="节点类型"></el-checkbox>
-                      </el-row>
-                      <el-row>
-                        <el-checkbox v-model="form.sort" label="排序节点"></el-checkbox>
-                      </el-row>
-                      <el-row>
-                        <el-checkbox v-model="form.fdn" label="过滤非法节点"></el-checkbox>
-                      </el-row>
-                      <el-button slot="reference">更多选项</el-button>
-                    </el-popover>
                     <el-popover placement="bottom" style="margin-left: 10px">
                       <el-row>
                         <el-checkbox v-model="form.tpl.surge.doh" label="Surge.DoH"></el-checkbox>
@@ -221,7 +215,7 @@
 </template>
 
 <script>
-const project = process.env.VUE_APP_PROJECT
+// const project = process.env.VUE_APP_PROJECT
 const remoteConfigSample = process.env.VUE_APP_SUBCONVERTER_REMOTE_CONFIG
 const gayhubRelease = process.env.VUE_APP_BACKEND_RELEASE
 const defaultBackend = process.env.VUE_APP_SUBCONVERTER_DEFAULT_BACKEND + '/sub?'
@@ -232,7 +226,7 @@ const tgBotLink = process.env.VUE_APP_BOT_LINK
 export default {
   data() {
     return {
-      backendVersion: "",
+      // backendVersion: "",
       advanced: "2",
 
       // 是否为 PC 端
@@ -255,7 +249,12 @@ export default {
           ClashR: "clashr",
           Surge2: "surge&ver=2",
         },
-        backendOptions: [{ value: "http://127.0.0.1:25500/sub?" }],
+        customBackend: {
+          "Micky自用后端": "https://suc.have-fun.win/sub?"
+        },
+        backendOptions: [
+          { value: "https://suc.have-fun.win/sub?" }
+        ],
         remoteConfig: [
           {
             label: "universal",
@@ -338,10 +337,10 @@ export default {
         includeRemarks: "",
         filename: "",
         emoji: true,
-        nodeList: false,
+        nodeList: true,
         extraset: false,
-        sort: false,
-        udp: false,
+        sort: true,
+        udp: true,
         tfo: false,
         scv: true,
         fdn: false,
@@ -385,15 +384,16 @@ export default {
   mounted() {
     this.form.clientType = "clash";
     this.notify();
-    this.getBackendVersion();
+    // this.getBackendVersion();
+    this.form.customBackend ="https://suc.have-fun.win/sub?"
   },
   methods: {
     onCopy() {
       this.$message.success("Copied!");
     },
-    goToProject() {
-      window.open(project);
-    },
+    // goToProject() {
+    //   window.open(project);
+    // },
     gotoGayhub() {
       window.open(gayhubRelease);
     },
@@ -538,17 +538,17 @@ export default {
         });
     },
     notify() {
-      const h = this.$createElement;
+      //const h = this.$createElement;
 
-      this.$notify({
-        title: "隐私提示",
-        type: "warning",
-        message: h(
-          "i",
-          { style: "color: teal" },
-          "各种订阅链接（短链接服务除外）生成纯前端实现，无隐私问题。默认提供后端转换服务，隐私担忧者请自行搭建后端服务。"
-        )
-      });
+      // this.$notify({
+      //   title: "隐私提示",
+      //   type: "warning",
+      //   message: h(
+      //     "i",
+      //     { style: "color: teal" },
+      //     "各种订阅链接（短链接服务除外）生成纯前端实现，无隐私问题。默认提供后端转换服务，隐私担忧者请自行搭建后端服务。"
+      //   )
+      // });
     },
     confirmUploadConfig() {
       if (this.uploadConfig === "") {
@@ -607,16 +607,16 @@ export default {
         );
       };
     },
-    getBackendVersion() {
-      this.$axios
-        .get(
-          defaultBackend.substring(0, defaultBackend.length - 5) + "/version"
-        )
-        .then(res => {
-          this.backendVersion = res.data.replace(/backend\n$/gm, "");
-          this.backendVersion = this.backendVersion.replace("subconverter", "");
-        });
-    },
+    // getBackendVersion() {
+    //   this.$axios
+    //     .get(
+    //       defaultBackend.substring(0, defaultBackend.length - 5) + "/version"
+    //     )
+    //     .then(res => {
+    //       this.backendVersion = res.data.replace(/backend\n$/gm, "");
+    //       this.backendVersion = this.backendVersion.replace("subconverter", "");
+    //     });
+    // },
     saveSubUrl() {
       if (this.form.sourceSubUrl !== '') {
         this.setLocalStorageItem('sourceSubUrl', this.form.sourceSubUrl)
